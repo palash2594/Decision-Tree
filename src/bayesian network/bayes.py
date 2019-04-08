@@ -2,18 +2,17 @@ import numpy as np
 from scipy.stats import norm
 
 
-N = 4
+N = 7
 Y = 3
 
 def load_data(filename):
-    data = np.array([[float(x) for x in line.strip().split(',')] for line in open(filename).readlines()])
+    data = np.array([[float(x) for x in line.strip().split('\t')] for line in open(filename).readlines()])
     # print('Loaded %d observations.'%len(data))
     return data
 
 def condprob(x, n, y, params):
-    temp = norm.pdf(x, params[n][y]['mean'], params[n][y]['var'])
-    # if temp == 0.0:
-    #     print(x, params[n][y]['mean'], params[n][y]['var'])
+    temp = norm.pdf(x, params[n][y]['mean'], params[n][y]['var'])\
+        # print(x, params[n][y]['mean'], params[n][y]['var'])
     return temp
 
 def learn(data):
@@ -28,7 +27,6 @@ def learn(data):
                     subset.append(obs[n])
             params[n][y]['mean'] = np.mean(subset)
             params[n][y]['var'] = np.var(subset)
-    # print(params)
     return params
 
 def classify(obs, params):
@@ -36,19 +34,22 @@ def classify(obs, params):
     for y in range(Y):
         prob  = 1
         for n in range(N):
+            if n == 2:
+                continue
             prob *= condprob(obs[n], n, y, params)
         ans.append(prob)
-    print(ans)
+    # print(ans)
     return ans
 
 
 def demo():
-    train_data = load_data('iris.train')
+    train_data = load_data('seeds_dataset.txt')
     params = learn(train_data)
 
-    test_data = load_data('iris.train')
+    test_data = load_data('seeds_dataset.txt')
 
     correct = 0
+    np.seterr(divide='ignore', invalid='ignore')
     for obs in test_data:
         # print(obs, end='-- ')
         result = classify(obs, params)
