@@ -1,6 +1,7 @@
 import numpy as np
 import collections
 import math
+import random
 
 class Node:
 
@@ -60,14 +61,11 @@ def find_initial_entropy(data, removed_attribute):
         class_entropy += (freq_class[key] / sum_class * math.log(freq_class[key] / sum_class, 2))
 
     class_entropy *= -1
-    print("class entropy: ", class_entropy)
+    # print("class entropy: ", class_entropy)
 
     means = []
     for i in range(4):
         means.append(np.mean(a[:,i]))
-
-    # g_counts = get_greater_counts(a, 0, means[0])
-    # s_counts = get_smaller_counts(a, 0, means[0])
 
     gains = []
 
@@ -93,9 +91,6 @@ def find_initial_entropy(data, removed_attribute):
         att_entropy = -1 * (sum(g_counts) / count * g_att_entropy + sum(s_counts) / count * s_att_entropy)
         gain = class_entropy - att_entropy
         gains.append(gain)
-
-        # print(g_att_entropy, s_att_entropy)
-        # print(att_entropy)
 
     return gains.index(max(gains)), max(gains), means[gains.index(max(gains))]
 
@@ -137,12 +132,6 @@ def find_entropy(data, current, depth, remove_attribute, split_point):
     if depth < 3:
         attribute, gain, split_point = find_initial_entropy(data, remove_attribute)
 
-    # if current == None:
-    #     attribute, gain, split_point = find_initial_entropy(data, attributes)
-    #     root = Node(attribute, split_point)
-    # else:
-    #     attribute, gain, split_point = find_initial_entropy(data, attributes)
-
         root = Node(attribute, split_point, data)
         data_low, data_high = get_data(data, attribute, split_point)
 
@@ -158,25 +147,39 @@ def find_entropy(data, current, depth, remove_attribute, split_point):
 
     return root
 
-    # a = np.array(data)
-    # #     print(type(a))
-    # #     # print(a)
-    # means = a.mean(axis=0)
-
 def traverse(root):
     while root is not None:
         print(root.name)
+
+def test_decision_tree(root, input):
+    attributes = ["Setosa", "Verisicolor", "Virginica"]
+    while root.split_point is not None:
+        if root.split_point > input[root.name]:
+            root = root.left
+        else:
+            root = root.right
+
+    # print(input)
+    #
+    # print(attributes[int(root.name) - 1])
+    return int(root.name)
 
 if __name__ == '__main__':
 
     data = read_data("iris.data.txt")
     attributes = [0, 1, 2, 3]
-    # attribute, gain, split_point = find_initial_entropy(data, -1)
-    # print(attribute, gain, split_point)
-    # root = Node(attribute, split_point)
 
-    root = find_entropy(data, None, 0, -1, 0)
+    train_data = random.sample(data, k = int(0.7 * 150))
+    test_data = random.sample(data, k = int(0.3 * 150))
+    print("Total inputs: ", len(data))
+    print("Inputs used for Training: ", len(train_data))
+    print("Inputs used for Testing: ", len(test_data))
 
-    print("hello")
+    root = find_entropy(train_data, None, 0, -1, 0)
 
-    # print(data)
+    count = 0
+    for input in test_data:
+        if input[4] == test_decision_tree(root, input):
+            count += 1
+
+    print("Accuracy: ", count / len(test_data))
