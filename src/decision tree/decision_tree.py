@@ -4,11 +4,12 @@ import math
 
 class Node:
 
-    __slots__ = "name", "split_point", "left", "right"
+    __slots__ = "name", "split_point", "left", "right", "data"
 
-    def __init__(self, name, split_point):
+    def __init__(self, name, split_point, data):
         self.name = name
         self.split_point = split_point
+        self.data = data
 
 def read_data(file_name):
     data = []
@@ -111,11 +112,29 @@ def get_data(data, attribute, split_point):
 
     return data_low, data_high
 
+def get_best_attribute(data):
+    class_type = {}
+    for item in data:
+        if item[4] not in class_type:
+            class_type[item[4]] = 1
+        else:
+            class_type[item[4]] += 1
 
-def find_entropy(data, current, depth, remove_attribute):
+    max = -1
+    max_att = -1
+
+    for key, value in class_type.items():
+        if value > max:
+            max = value
+            max_att = key
+
+    return max_att
+
+
+def find_entropy(data, current, depth, remove_attribute, split_point):
 
     root = None
-    if depth < 5:
+    if depth < 3:
         attribute, gain, split_point = find_initial_entropy(data, remove_attribute)
 
     # if current == None:
@@ -124,29 +143,40 @@ def find_entropy(data, current, depth, remove_attribute):
     # else:
     #     attribute, gain, split_point = find_initial_entropy(data, attributes)
 
-        root = Node(attribute, split_point)
+        root = Node(attribute, split_point, data)
         data_low, data_high = get_data(data, attribute, split_point)
 
         remove_attribute = attribute
 
-        root.left = find_entropy(data_low, root, depth + 1, remove_attribute)
-        root.right = find_entropy(data_high, root, depth + 1, remove_attribute)
+        root.left = find_entropy(data_low, root, depth + 1, remove_attribute, split_point)
+        root.right = find_entropy(data_high, root, depth + 1, remove_attribute, split_point)
+    else:
+        data_low, data_high = get_data(data, remove_attribute, split_point)
+        root = Node(get_best_attribute(data), None, data)
+        root.left = None
+        root.right = None
 
     return root
 
-    a = np.array(data)
-    print(type(a))
-    # print(a)
-    means = a.mean(axis=0)
+    # a = np.array(data)
+    # #     print(type(a))
+    # #     # print(a)
+    # means = a.mean(axis=0)
+
+def traverse(root):
+    while root is not None:
+        print(root.name)
 
 if __name__ == '__main__':
 
     data = read_data("iris.data.txt")
     attributes = [0, 1, 2, 3]
-    attribute, gain, split_point = find_initial_entropy(data, -1)
-    print(attribute, gain, split_point)
-    root = Node(attribute, split_point)
+    # attribute, gain, split_point = find_initial_entropy(data, -1)
+    # print(attribute, gain, split_point)
+    # root = Node(attribute, split_point)
 
-    # find_entropy(data, root, 0)
+    root = find_entropy(data, None, 0, -1, 0)
+
+    print("hello")
 
     # print(data)
