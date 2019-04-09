@@ -129,7 +129,7 @@ def get_best_attribute(data):
 def find_entropy(data, current, depth, remove_attribute, split_point):
 
     root = None
-    if depth < 3:
+    if depth < 5:
         attribute, gain, split_point = find_initial_entropy(data, remove_attribute)
 
         root = Node(attribute, split_point, data)
@@ -137,8 +137,8 @@ def find_entropy(data, current, depth, remove_attribute, split_point):
 
         remove_attribute = attribute
 
-        root.left = find_entropy(data_low, root, depth + 1, remove_attribute, split_point)
-        root.right = find_entropy(data_high, root, depth + 1, remove_attribute, split_point)
+        root.left = find_entropy(data_low, root, depth + 1, -1, split_point)
+        root.right = find_entropy(data_high, root, depth + 1, -1, split_point)
     else:
         data_low, data_high = get_data(data, remove_attribute, split_point)
         root = Node(get_best_attribute(data), None, data)
