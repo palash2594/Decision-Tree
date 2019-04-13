@@ -1,3 +1,10 @@
+
+__author__ = "Palash Jain"
+
+"""
+This is an implementation of the bayesian network.
+"""
+
 import numpy as np
 import math
 import random
@@ -6,6 +13,11 @@ N = 0
 Y = 0
 
 def read_data(file_name):
+    """
+    to read the input data file
+    :param file_name: name of the file
+    :return: read data in list of list
+    """
     data = []
 
     file_data = open("seeds_dataset.txt", "r")
@@ -21,12 +33,26 @@ def read_data(file_name):
     return data
 
 def condprob(x, n, y, mean, var):
+    """
+    to find the conditional probability
+    :param x: Values at which to evaluate pdf
+    :param n: the nth attribute
+    :param y: the yth class
+    :param mean: the mean for every attribute and class
+    :param var: the variance for every attribute and class
+    :return: the conditional probability
+    """
     mu = mean[n][y]
     sigma = var[n][y]
     pdf = (1 / (sigma * math.sqrt(2 * 3.14))) * math.exp(-1 * math.pow(x - mu, 2) / (2 * math.pow(sigma, 2)))
     return pdf
 
 def learn_data(data):
+    """
+    this function calculates the mean and variance for attribute corresponding to a class
+    :param data: data set
+    :return: calculated mean and variance
+    """
     mean = {}
     var = {}
     for n in range(N):
@@ -42,6 +68,13 @@ def learn_data(data):
     return mean, var
 
 def classify(obs, mean, var):
+    """
+    to classify data inputs in a class
+    :param obs: one of the observation
+    :param mean: the mean of attributes corresponding to a class
+    :param var: the variance of attributes corresponding to a class
+    :return: the probability of the observation to be in any particular class
+    """
     ans = []
     for y in range(Y):
         prob  = 1
@@ -54,6 +87,10 @@ def classify(obs, mean, var):
     return ans
 
 def bayes_classifier():
+    """
+    this function manages the flow of the program
+    :return:
+    """
     data = read_data('seeds_dataset.txt')
 
     data_column = list(zip(*data))

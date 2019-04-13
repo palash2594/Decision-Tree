@@ -1,3 +1,10 @@
+
+__author__ = "Palash Jain"
+
+"""
+This is an implementation of decision tree.
+"""
+
 import numpy as np
 import collections
 import math
@@ -5,17 +12,32 @@ import random
 
 class Node:
 
+    """
+    class to store every node in the tree
+    """
+
     __slots__ = "name", "split_point", "left", "right", "data"
 
     def __init__(self, name, split_point, data):
+        """
+        initiallization of the node
+        :param name: the name of the attribute
+        :param split_point: the point on which spliting took place
+        :param data: the data set corresponding to that node
+        """
         self.name = name
         self.split_point = split_point
         self.data = data
 
 def read_data(file_name):
+    """
+    to read the data from input file
+    :param file_name: the name of the file
+    :return: data read in list of list
+    """
     data = []
 
-    file_data = open("seeds_dataset.txt", "r")
+    file_data = open(file_name, "r")
 
     for line in file_data:
         line = line.strip().split("\t")
@@ -29,6 +51,13 @@ def read_data(file_name):
     return data
 
 def get_greater_counts(data, column, split_point):
+    """
+    to count the class labels in the right portion of splited data
+    :param data: the data set
+    :param column: the attribute in focus
+    :param split_point: the splitting point on which the data set is divided
+    :return: the count of every class label the current portion of data
+    """
     counts = [0, 0, 0, 0]
 
     for i in range(len(data)):
@@ -38,6 +67,13 @@ def get_greater_counts(data, column, split_point):
     return counts
 
 def get_smaller_counts(data, column, split_point):
+    """
+    to count the class labels in the right portion of splited data
+    :param data: the data set
+    :param column: the attribute in focus
+    :param split_point: the splitting point on which the data set is divided
+    :return: the count of every class label the current portion of data
+    """
     counts = [0, 0, 0, 0]
 
     for i in range(len(data)):
@@ -46,7 +82,13 @@ def get_smaller_counts(data, column, split_point):
 
     return counts
 
-def find_initial_entropy(data, removed_attribute):
+def find_best_entropy(data):
+    """
+    to calculate the best entropy
+    :param data: the data set
+    :param removed_attribute:
+    :return:
+    """
     a = np.array(data)
     means = a.mean(axis=0)
 
@@ -70,9 +112,6 @@ def find_initial_entropy(data, removed_attribute):
     gains = []
 
     for attribute in range(7):
-        if attribute == removed_attribute:
-            gains.append(0)
-            continue
         g_att_entropy = 0
         s_att_entropy = 0
         g_counts = get_greater_counts(a, attribute, means[attribute])
@@ -96,6 +135,13 @@ def find_initial_entropy(data, removed_attribute):
 
 
 def get_data(data, attribute, split_point):
+    """
+    to the data with respect to the split point
+    :param data: the dataset
+    :param attribute: the attribute by which the splitting occurs
+    :param split_point: the split point
+    :return: the splited data in two separate list
+    """
     data_low = []
     data_high = []
 
@@ -108,6 +154,12 @@ def get_data(data, attribute, split_point):
     return data_low, data_high
 
 def get_best_attribute(data):
+    """
+    to choose the best attribute by calculating the highest occurence of that attribute
+    in the given data set
+    :param data: the dataset
+    :return: the best attribute
+    """
     class_type = {}
     for item in data:
         if item[7] not in class_type:
@@ -126,21 +178,28 @@ def get_best_attribute(data):
     return max_att
 
 
-def find_entropy(data, current, depth, remove_attribute, split_point):
+def find_entropy(data, current, depth, split_point):
+    """
+    this is a recursive function which builds the decision tree
+    :param data: the dataset
+    :param current: the current attribute in focus
+    :param depth: the current depth of the decision tree
+    :param split_point:
+    :return:
+    """
 
     root = None
     if depth < 5:
-        attribute, gain, split_point = find_initial_entropy(data, remove_attribute)
+        attribute, gain, split_point = find_best_entropy(data)
 
         root = Node(attribute, split_point, data)
         data_low, data_high = get_data(data, attribute, split_point)
 
         remove_attribute = attribute
 
-        root.left = find_entropy(data_low, root, depth + 1, -1, split_point)
-        root.right = find_entropy(data_high, root, depth + 1, -1, split_point)
+        root.left = find_entropy(data_low, root, depth + 1, split_point)
+        root.right = find_entropy(data_high, root, depth + 1, split_point)
     else:
-        data_low, data_high = get_data(data, remove_attribute, split_point)
         root = Node(get_best_attribute(data), None, data)
         root.left = None
         root.right = None
@@ -148,10 +207,21 @@ def find_entropy(data, current, depth, remove_attribute, split_point):
     return root
 
 def traverse(root):
+    """
+    to print the decision tree
+    :param root: the root of the tree
+    :return:
+    """
     while root is not None:
         print(root.name)
 
 def test_decision_tree(root, input):
+    """
+    to test the decision tree's accuracy
+    :param root: the root of the decision tree
+    :param input: the input observation
+    :return: the class label
+    """
     attributes = ["Kama", "Rosa", "Canadian"]
     while root.split_point is not None:
         if root.split_point > input[root.name]:
@@ -159,9 +229,6 @@ def test_decision_tree(root, input):
         else:
             root = root.right
 
-    # print(input)
-    #
-    # print(attributes[int(root.name) - 1])
     return int(root.name)
 
 if __name__ == '__main__':
@@ -176,13 +243,13 @@ if __name__ == '__main__':
 
     test_data = [data[len(data) // 3 : ], data[0 : len(data) // 3 + 1] + data[2 * len(data) // 3 + 1 : ], data[0 : 2 * len(data) // 3]]
 
-    print("Total inputs: ", len(data))    
+    print("Total inputs: ", len(data))
     print()
     for i in range(3):
         print("Inputs used for Training: ", len(train_data[i]))
         print("Inputs used for Testing: ", len(test_data[i]))
 
-        root = find_entropy(train_data[i], None, 0, -1, 0)
+        root = find_entropy(train_data[i], None, 0, 0)
 
         count = 0
         for input in test_data[i]:
